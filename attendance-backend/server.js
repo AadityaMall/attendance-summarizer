@@ -277,16 +277,24 @@ app.post(
   }
 );
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// Simple health check for deployment verification
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ ok: true });
 });
 
-module.exports = {
-  app,
-  normalizeCourseInfo,
-  extractStudentInfo,
-  processAttendanceData,
-};
+// In local development, start the server. In Vercel, the app is exported below.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
+
+// Export the Express app for Vercel Serverless Functions
+module.exports = app;
+// Optionally expose utilities when required as a library (doesn't affect Vercel)
+module.exports.normalizeCourseInfo = normalizeCourseInfo;
+module.exports.extractStudentInfo = extractStudentInfo;
+module.exports.processAttendanceData = processAttendanceData;
 
 function standardizeCourseName(name) {
   const n = name.replace(/\s+/g, " ").trim();
