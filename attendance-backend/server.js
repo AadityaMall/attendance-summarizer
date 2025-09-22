@@ -6,12 +6,11 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Enable CORS for local development frontend
 app.use(
   cors({
-    origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
+    origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type"]
   })
 );
 
