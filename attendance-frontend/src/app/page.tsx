@@ -58,7 +58,7 @@ export default function Home() {
     try {
       const body = new FormData();
       body.append("attendanceFile", file);
-      const url = `${backendUrl}/api/attendance`;
+      const url = `${backendUrl}api/attendance`;
       const res = await fetch(url, { method: "POST", body });
       const json: ApiResponse = await res.json();
       if (!res.ok || !json.success) {

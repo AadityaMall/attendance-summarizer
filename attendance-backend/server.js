@@ -7,11 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
-  })
+  cors()
 );
 
 // Configure multer to use memory storage to avoid saving files to disk.
