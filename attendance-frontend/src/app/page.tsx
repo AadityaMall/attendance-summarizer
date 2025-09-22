@@ -43,9 +43,8 @@ export default function Home() {
   const [result, setResult] = useState<ApiResponse["data"] | null>(null);
   const [endDate, setEndDate] = useState<string>("");
 
-  const backendUrl = useMemo(() => {
-    return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
-  }, []);
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000/";
+
 
   const handleUpload = async () => {
     setError(null);
@@ -167,21 +166,7 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Badge({ percent }: { percent: number }) {
-  const color =
-    percent >= 85
-      ? "bg-emerald-500"
-      : percent >= 75
-      ? "bg-amber-500"
-      : "bg-rose-500";
-  return (
-    <span
-      className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md ${color}`}
-    >
-      {percent.toFixed(2)}%
-    </span>
-  );
-}
+
 
 function toRows(courses: CourseRow[]): AttendanceRow[] {
   return courses.map((c) => {
