@@ -10,7 +10,7 @@ app.use(
   cors({
     origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type"]
+    allowedHeaders: ["Content-Type"],
   })
 );
 
@@ -33,9 +33,11 @@ function normalizeCourseInfo(rawName) {
       .replace(/\s*-\s*/g, "-")
       .trim()
   );
-  return { name: courseName.length ? courseName : "Unknown", type: lectureType };
+  return {
+    name: courseName.length ? courseName : "Unknown",
+    type: lectureType,
+  };
 }
-
 
 function extractStudentInfo(text) {
   // Clean the text by replacing newlines with spaces and collapsing multiple spaces.
@@ -76,7 +78,9 @@ function extractStudentInfo(text) {
 function processAttendanceData(text, options = {}) {
   const attendanceAgg = {};
   const firstSeenOrder = [];
-  const endDateLimit = options.endDateLimit ? parseFlexibleDate(options.endDateLimit) : null;
+  const endDateLimit = options.endDateLimit
+    ? parseFlexibleDate(options.endDateLimit)
+    : null;
 
   // Build records by scanning lines: a record starts with a numeric line, ends at a standalone A/P line
   const lines = text.split(/\r?\n/);
@@ -89,7 +93,7 @@ function processAttendanceData(text, options = {}) {
     const line = lines[i].trim();
     // Detect header block (appears as separate lines: Sr, No., Course Name, Date, Start Time, End Time, Attenda, nce)
     if (!scanning) {
-      if (line === 'Course Name') {
+      if (line === "Course Name") {
         scanning = true;
       }
       continue;
@@ -128,13 +132,20 @@ function processAttendanceData(text, options = {}) {
       ? parts[parts.length - 1]
       : null;
     // Find a line that looks like a date e.g., "Jul 14, 2025" and assume course lines come before it
-    const dateIdx = parts.findIndex((p) => /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4}$/.test(p));
+    const dateIdx = parts.findIndex((p) =>
+      /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4}$/.test(
+        p
+      )
+    );
     // Optionally filter by end date
     if (dateIdx >= 0 && endDateLimit) {
       const d = parseFlexibleDate(parts[dateIdx]);
       if (d && d > endDateLimit) continue;
     }
-    const courseSlice = dateIdx > 0 ? parts.slice(0, dateIdx) : parts.slice(0, parts.length - (status ? 1 : 0));
+    const courseSlice =
+      dateIdx > 0
+        ? parts.slice(0, dateIdx)
+        : parts.slice(0, parts.length - (status ? 1 : 0));
     const rawCourseName = courseSlice.join(" ");
 
     const { name, type } = normalizeCourseInfo(rawCourseName);
@@ -144,7 +155,8 @@ function processAttendanceData(text, options = {}) {
       attendanceAgg[name] = {};
       firstSeenOrder.push(name);
     }
-    if (!attendanceAgg[name][type]) attendanceAgg[name][type] = { conducted: 0, attended: 0 };
+    if (!attendanceAgg[name][type])
+      attendanceAgg[name][type] = { conducted: 0, attended: 0 };
 
     attendanceAgg[name][type].conducted++;
     if (status === "P") attendanceAgg[name][type].attended++;
@@ -169,12 +181,23 @@ function processAttendanceData(text, options = {}) {
         type,
         totalClassesConducted: conducted,
         totalClassesAttended: attended,
-        percentage: conducted > 0 ? parseFloat(((attended / conducted) * 100).toFixed(2)) : 0,
+        percentage:
+          conducted > 0
+            ? parseFloat(((attended / conducted) * 100).toFixed(2))
+            : 0,
       });
     }
 
-    const overallPercentage = totalConducted > 0 ? parseFloat(((totalAttended / totalConducted) * 100).toFixed(2)) : 0;
-    courseSummary.push({ sNo: sNo++, courseName, lectureTypes, overallPercentage });
+    const overallPercentage =
+      totalConducted > 0
+        ? parseFloat(((totalAttended / totalConducted) * 100).toFixed(2))
+        : 0;
+    courseSummary.push({
+      sNo: sNo++,
+      courseName,
+      lectureTypes,
+      overallPercentage,
+    });
   }
 
   return courseSummary;
@@ -183,7 +206,9 @@ function processAttendanceData(text, options = {}) {
 function parseFlexibleDate(s) {
   if (!s) return null;
   // Formats like "Jul 14, 2025"
-  const m1 = s.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4}$/);
+  const m1 = s.match(
+    /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4}$/
+  );
   if (m1) return new Date(s);
   // Formats like 14.07.2025
   const m2 = s.match(/^(\d{2})[./-](\d{2})[./-](\d{4})$/);
@@ -252,6 +277,9 @@ app.post(
   }
 );
 
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
 
 module.exports = {
   app,
@@ -267,7 +295,10 @@ function standardizeCourseName(name) {
   if (/^NATURAL\s+LANGUAGE\s+PROC/i.test(u)) {
     return "Natural Language Processing";
   }
-  if (/^UNIVERSAL\s+HUMAN\s+VALUES[-\s]*II$/i.test(u) || u.includes("UNIVERSAL HUMAN VALUES-II")) {
+  if (
+    /^UNIVERSAL\s+HUMAN\s+VALUES[-\s]*II$/i.test(u) ||
+    u.includes("UNIVERSAL HUMAN VALUES-II")
+  ) {
     return "Universal Human Values-II";
   }
   return n;
